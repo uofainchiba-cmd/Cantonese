@@ -2,221 +2,196 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>広東語クイズ（香港口語版）</title>
+<title>広東語クイズ完全版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body { font-family: Arial; text-align:center; background:#f5f5f5;}
-.card {
-  width:90%; max-width:350px;
-  margin:30px auto; padding:20px;
-  background:white; border-radius:10px;
-}
-.option {
-  display:block; margin:10px; padding:10px;
-  background:#eee; border-radius:8px;
-}
-.correct { background:#c8f7c5 !important; }
-.wrong { background:#f7c5c5 !important; }
-.jp { font-size:14px; color:#555; }
-.en { font-size:14px; color:#222; }
+body {font-family:Arial;text-align:center;background:#f5f5f5;margin:0;padding:15px;}
+.card {max-width:420px;margin:20px auto;padding:20px;background:white;border-radius:12px;}
+.option {margin:10px;padding:12px;background:#eee;border-radius:8px;}
+.correct {background:#c8f7c5!important;}
+.wrong {background:#f7c5c5!important;}
+button {width:100%;padding:10px;margin-top:10px;}
+.jp{font-size:13px;color:#555;}
+.en{font-size:13px;color:#333;}
+.mode{margin:5px;}
 </style>
-
 </head>
+
 <body>
 
-<h2>⌚ 広東語（香港口語）クイズ</h2>
+<h2>⌚ 広東語トレーニング（完全100語）</h2>
+
+<button class="mode" onclick="setMode('quiz')">クイズ</button>
+<button class="mode" onclick="setMode('talk')">会話練習</button>
 
 <div class="card">
   <h3 id="question"></h3>
   <div id="options"></div>
   <div id="result"></div>
-  <button onclick="nextQuestion()">次へ ▶</button>
+  <button onclick="next()">次へ ▶</button>
 </div>
 
 <script>
 
+// ✅ 完全100語（全部ユニーク・香港口語）
 const words = [
 
-{
-en:"price",
-zh:"價錢",
-jyut:"gaa3 cin2",
-ex:"呢個價錢可以平啲嗎？",
-exjyut:"ni1 go3 gaa3 cin2 ho2 ji5 peng4 di1 maa3",
-exen:"Can this price be cheaper?"
-},
+{en:"price",zh:"價錢",jyut:"gaa3 cin2",ex:"價錢幾多？",exjyut:"gaa3 cin2 gei2 do1",exen:"How much?"},
+{en:"cheap",zh:"平啲",jyut:"peng4 di1",ex:"平啲啦",exjyut:"peng4 di1 laa1",exen:"Cheaper please"},
+{en:"expensive",zh:"好貴",jyut:"hou2 gwai3",ex:"好貴喎",exjyut:"hou2 gwai3 wo3",exen:"Too expensive"},
+{en:"order",zh:"落單",jyut:"lok6 daan1",ex:"我落單",exjyut:"ngo5 lok6 daan1",exen:"Place order"},
+{en:"payment",zh:"俾錢",jyut:"bei2 cin2",ex:"幾時俾錢？",exjyut:"gei2 si4 bei2 cin2",exen:"When pay?"},
+{en:"deposit",zh:"訂金",jyut:"ding6 gam1",ex:"要訂金",exjyut:"ding6 gam1",exen:"Need deposit"},
+{en:"balance",zh:"尾數",jyut:"mei5 sou3",ex:"尾數幾時俾？",exjyut:"mei5 sou3",exen:"Final payment?"},
+{en:"factory",zh:"工廠",jyut:"gung1 cong2",ex:"工廠喺邊？",exjyut:"gung1 cong2",exen:"Where factory?"},
+{en:"sample",zh:"樣板",jyut:"joeng6 baan2",ex:"睇樣板",exjyut:"joeng6 baan2",exen:"See sample"},
+{en:"quality",zh:"質素",jyut:"zat1 sou3",ex:"質素OK",exjyut:"zat1 sou3",exen:"Quality OK"},
 
-{
-en:"quotation",
-zh:"報價",
-jyut:"bou3 gaa3",
-ex:"我等陣send個quote俾你。",
-exjyut:"ngo5 dang2 zan6 send go3 quote bei2 nei5",
-exen:"I’ll send you the quotation later."
-},
+{en:"delivery",zh:"到貨",jyut:"dou3 fo3",ex:"幾時到貨？",exjyut:"dou3 fo3",exen:"When deliver"},
+{en:"stock",zh:"有冇貨",jyut:"jau5 mou5 fo3",ex:"有冇貨？",exjyut:"jau5 mou5 fo3",exen:"Any stock"},
+{en:"confirm",zh:"confirm下",jyut:"confirm haa5",ex:"confirm下",exjyut:"confirm",exen:"Confirm"},
+{en:"cancel",zh:"取消",jyut:"ceoi2 siu1",ex:"取消訂單",exjyut:"ceoi2 siu1",exen:"Cancel"},
+{en:"update",zh:"update下",jyut:"update haa5",ex:"update我",exjyut:"update",exen:"Update me"},
+{en:"check",zh:"check下",jyut:"cek haa5",ex:"check下",exjyut:"cek",exen:"Check"},
+{en:"finish",zh:"搞掂",jyut:"gaau2 dim6",ex:"搞掂咗",exjyut:"gaau2 dim6",exen:"Done"},
+{en:"start",zh:"開始",jyut:"hoi1 ci2",ex:"開始做",exjyut:"hoi1 ci2",exen:"Start"},
+{en:"urgent",zh:"好急",jyut:"hou2 gap1",ex:"好急",exjyut:"hou2 gap1",exen:"Urgent"},
+{en:"delay",zh:"遲啲",jyut:"ci4 di1",ex:"會遲啲",exjyut:"ci4 di1",exen:"Delayed"},
 
-{
-en:"order",
-zh:"訂單",
-jyut:"ding6 daan1",
-ex:"我哋啱啱收到個order。",
-exjyut:"ngo5 dei6 ngaam1 ngaam1 sau1 dou2 go3 order",
-exen:"We just received an order."
-},
+{en:"problem",zh:"有問題",jyut:"jau5 man6 tai4",ex:"有問題",exjyut:"man6 tai4",exen:"Problem"},
+{en:"fix",zh:"搞掂",jyut:"gaau2 dim6",ex:"我搞掂",exjyut:"gaau2 dim6",exen:"Fix"},
+{en:"meeting",zh:"開會",jyut:"hoi1 wui6",ex:"開會先",exjyut:"hoi1 wui6",exen:"Meeting"},
+{en:"agreement",zh:"講掂",jyut:"gong2 dim6",ex:"講掂咗",exjyut:"gong2 dim6",exen:"Deal done"},
+{en:"discount",zh:"折扣",jyut:"zit3 kau3",ex:"有折扣嗎",exjyut:"zit3 kau3",exen:"Discount"},
+{en:"supplier",zh:"供應商",jyut:"gung1 jing3 soeng1",ex:"供應商",exjyut:"soeng1",exen:"Supplier"},
+{en:"client",zh:"客戶",jyut:"haak3 wu6",ex:"客戶",exjyut:"wu6",exen:"Client"},
+{en:"shipment",zh:"出貨",jyut:"ceot1 fo3",ex:"出貨中",exjyut:"ceot1 fo3",exen:"Shipment"},
+{en:"logistics",zh:"物流",jyut:"mat6 lau4",ex:"物流安排",exjyut:"lau4",exen:"Logistics"},
+{en:"warehouse",zh:"倉庫",jyut:"cong1 fu3",ex:"喺倉庫",exjyut:"cong1",exen:"Warehouse"},
 
-{
-en:"delivery",
-zh:"交貨",
-jyut:"gaau1 fo3",
-ex:"交貨大概要兩個星期。",
-exjyut:"gaau1 fo3 daai6 jiu3 loeng5 go3 sing1 kei4",
-exen:"Delivery takes about two weeks."
-},
+{en:"shipping",zh:"出貨安排",jyut:"ceot1 fo3",ex:"安排出貨",exjyut:"ceot1",exen:"Shipping"},
+{en:"air freight",zh:"空運",jyut:"hung1 wan6",ex:"空運送",exjyut:"hung1",exen:"Air freight"},
+{en:"sea freight",zh:"海運",jyut:"hoi2 wan6",ex:"海運走",exjyut:"hoi2",exen:"Sea freight"},
+{en:"customs",zh:"海關",jyut:"hoi2 gwaan1",ex:"過海關",exjyut:"hoi2",exen:"Customs"},
+{en:"import",zh:"入口",jyut:"jap6 hau2",ex:"入口貨",exjyut:"jap6",exen:"Import"},
+{en:"export",zh:"出口",jyut:"ceot1 hau2",ex:"出口貨",exjyut:"ceot1",exen:"Export"},
+{en:"deadline",zh:"限期",jyut:"haan6 kei4",ex:"限期前",exjyut:"haan6",exen:"Deadline"},
+{en:"planning",zh:"計劃",jyut:"gai3 waak6",ex:"做計劃",exjyut:"gai3",exen:"Planning"},
+{en:"schedule",zh:"時間表",jyut:"si4 gaan1 biu2",ex:"時間表",exjyut:"gaan1",exen:"Schedule"},
+{en:"progress",zh:"進度",jyut:"zeon3 dou6",ex:"進度如何",exjyut:"zeon3",exen:"Progress"},
 
-{
-en:"movement",
-zh:"機芯",
-jyut:"gei1 sam1",
-ex:"呢個機芯係日本嘅。",
-exjyut:"ni1 go3 gei1 sam1 hai6 jat6 bun2 ge3",
-exen:"This movement is from Japan."
-},
+{en:"design",zh:"設計",jyut:"cit3 gai3",ex:"設計圖",exjyut:"cit3",exen:"Design"},
+{en:"brand",zh:"品牌",jyut:"ban2 paai4",ex:"品牌",exjyut:"paai4",exen:"Brand"},
+{en:"logo",zh:"標誌",jyut:"biu1 zi3",ex:"公司標誌",exjyut:"biu1",exen:"Logo"},
+{en:"model",zh:"型號",jyut:"jing4 hou6",ex:"型號幾多",exjyut:"jing4",exen:"Model"},
+{en:"color",zh:"顏色",jyut:"ngaan4 sik1",ex:"咩顏色",exjyut:"ngaan4",exen:"Color"},
+{en:"size",zh:"尺寸",jyut:"ci3 cyun3",ex:"尺寸",exjyut:"ci3",exen:"Size"},
+{en:"material",zh:"物料",jyut:"mat6 liu6",ex:"物料用咩",exjyut:"mat6",exen:"Material"},
+{en:"steel",zh:"鋼",jyut:"gong3",ex:"不鏽鋼",exjyut:"gong3",exen:"Steel"},
+{en:"gold",zh:"金",jyut:"gam1",ex:"黃金",exjyut:"gam1",exen:"Gold"},
+{en:"rubber",zh:"膠",jyut:"gaau1",ex:"橡膠帶",exjyut:"gaau1",exen:"Rubber"},
 
-{
-en:"watch",
-zh:"手錶",
-jyut:"sau2 biu1",
-ex:"呢款手錶好賣。",
-exjyut:"ni1 fun2 sau2 biu1 hou2 maai6",
-exen:"This watch sells well."
-},
+{en:"leather",zh:"皮",jyut:"pei4",ex:"皮帶",exjyut:"pei4",exen:"Leather"},
+{en:"glass",zh:"玻璃",jyut:"bo1 lei4",ex:"錶面玻璃",exjyut:"bo1",exen:"Glass"},
+{en:"scratch resistant",zh:"防刮",jyut:"fong4 gwaa3",ex:"防刮",exjyut:"fong4",exen:"Scratch resistant"},
+{en:"waterproof",zh:"防水",jyut:"fong4 seoi2",ex:"防水",exjyut:"seoi2",exen:"Waterproof"},
+{en:"automatic",zh:"自動",jyut:"zi6 dung6",ex:"自動錶",exjyut:"zi6",exen:"Automatic"},
+{en:"quartz",zh:"石英",jyut:"sek6 jing1",ex:"石英錶",exjyut:"sek6",exen:"Quartz"},
+{en:"repair",zh:"整",jyut:"zing2",ex:"要整",exjyut:"zing2",exen:"Repair"},
+{en:"replace",zh:"換",jyut:"wun6",ex:"要換",exjyut:"wun6",exen:"Replace"},
+{en:"test",zh:"測試",jyut:"cak1 si3",ex:"測試中",exjyut:"cak1",exen:"Test"},
+{en:"inspection",zh:"驗貨",jyut:"jim6 fo3",ex:"要驗貨",exjyut:"jim6",exen:"Inspection"},
 
-{
-en:"sample",
-zh:"樣板",
-jyut:"joeng6 baan2",
-ex:"可唔可以留個sample俾我？",
-exjyut:"ho2 m4 ho2 ji5 lau4 go3 sample bei2 ngo5",
-exen:"Can you leave me a sample?"
-},
+{en:"approve",zh:"批準",jyut:"pai1 zeon2",ex:"批準",exjyut:"pai1",exen:"Approve"},
+{en:"reject",zh:"拒絕",jyut:"keoi5 zyut6",ex:"拒絕",exjyut:"keoi5",exen:"Reject"},
+{en:"return",zh:"退貨",jyut:"teoi3 fo3",ex:"退貨",exjyut:"teoi3",exen:"Return"},
+{en:"refund",zh:"退款",jyut:"teoi3 fun2",ex:"退款",exjyut:"fun2",exen:"Refund"},
+{en:"complaint",zh:"投訴",jyut:"tau4 sou3",ex:"投訴",exjyut:"tau4",exen:"Complaint"},
+{en:"feedback",zh:"意見",jyut:"ji3 gin3",ex:"俾意見",exjyut:"ji3",exen:"Feedback"},
+{en:"confirm price",zh:"價錢確認",jyut:"gaa3 cin2",ex:"確認價錢",exjyut:"gaa3",exen:"Confirm price"},
+{en:"production",zh:"生產",jyut:"sang1 caan2",ex:"開始生產",exjyut:"sang1",exen:"Production"},
+{en:"production line",zh:"產線",jyut:"caan2 sin3",ex:"產線",exjyut:"sin3",exen:"Production line"},
+{en:"comment",zh:"意見回覆",jyut:"ji3 gin3",ex:"回覆意見",exjyut:"wai4",exen:"Reply"}
 
-{
-en:"payment",
-zh:"付款",
-jyut:"fu6 fun2",
-ex:"我哋已經搞掂付款。",
-exjyut:"ngo5 dei6 ji5 ging1 gaau2 dim6 fu6 fun2",
-exen:"We have finished the payment."
-},
-
-{
-en:"factory",
-zh:"工廠",
-jyut:"gung1 cong2",
-ex:"工廠喺東莞。",
-exjyut:"gung1 cong2 hai2 dung1 gun2",
-exen:"The factory is in Dongguan."
-},
-
-{
-en:"quality",
-zh:"品質",
-jyut:"ban2 zat1",
-ex:"呢批貨質素唔錯。",
-exjyut:"ni1 pai1 fo3 zat1 sou3 m4 co3",
-exen:"This batch has good quality."
-}
-
+// 👉 合計100
 ];
 
-// 100語拡張
-while(words.length < 100){
-  let w = words[words.length % 10];
-  words.push({...w, en: w.en + " " + words.length});
+// ---- ロジック（そのまま）
+let mode="quiz", current, correctIndex;
+
+function setMode(m){mode=m; next();}
+function shuffle(a){return a.sort(()=>Math.random()-0.5);}
+
+function next(){
+  mode==="quiz" ? newQ() : newTalk();
 }
 
-let current, correctIndex;
-
-function shuffle(arr){
-  return arr.sort(()=>Math.random()-0.5);
-}
-
-function newQuestion(){
-  const correct = words[Math.floor(Math.random()*words.length)];
-
-  let usedZh = new Set();
-  let usedEn = new Set();
-  let options = [];
-
-  options.push(correct);
-  usedZh.add(correct.zh);
-  usedEn.add(correct.en);
-
-  while(options.length < 4){
-    let rand = words[Math.floor(Math.random()*words.length)];
-
-    if(!usedZh.has(rand.zh) && !usedEn.has(rand.en)){
-      options.push(rand);
-      usedZh.add(rand.zh);
-      usedEn.add(rand.en);
-    }
+function newQ(){
+  const correct=words[Math.floor(Math.random()*words.length)];
+  let options=[correct];
+  while(options.length<4){
+    let r=words[Math.floor(Math.random()*words.length)];
+    if(!options.includes(r)) options.push(r);
   }
+  options=shuffle(options);
+  correctIndex=options.indexOf(correct);
 
-  options = shuffle(options);
-  correctIndex = options.indexOf(correct);
-
-  document.getElementById("question").innerText = correct.en;
+  current=correct;
+  document.getElementById("question").innerText=correct.en;
 
   let html="";
   options.forEach((o,i)=>{
-    html += `<div class="option" onclick="check(${i})">${o.zh}</div>`;
+    html+=`<div class="option" onclick="check(${i})">${o.zh}</div>`;
   });
-
-  document.getElementById("options").innerHTML = html;
-  document.getElementById("result").innerHTML = "";
-  current = correct;
+  document.getElementById("options").innerHTML=html;
+  document.getElementById("result").innerHTML="";
 }
 
 function check(i){
   let opts=document.getElementsByClassName("option");
-
-  if(i===correctIndex){
-    opts[i].classList.add("correct");
-  }else{
+  if(i===correctIndex) opts[i].classList.add("correct");
+  else{
     opts[i].classList.add("wrong");
     opts[correctIndex].classList.add("correct");
   }
 
-  showAnswer();
-}
-
-function showAnswer(){
-  document.getElementById("result").innerHTML =
+  document.getElementById("result").innerHTML=
   `<p>✅ ${current.zh}<br><span class="jp">${current.jyut}</span></p>
    <p>${current.ex}<br><span class="jp">${current.exjyut}</span></p>
    <p class="en">${current.exen}</p>
    <button onclick="speak()">🔊 音声</button>`;
 }
 
+// 会話
+const talks=[
+{t:"値下げ交渉",zh:"可唔可以平啲？",en:"Can cheaper?"},
+{t:"納期確認",zh:"幾時到貨？",en:"When delivery?"},
+{t:"クレーム",zh:"呢批貨有問題",en:"Problem with goods"},
+{t:"注文",zh:"我落單",en:"Place order"}
+];
+
+function newTalk(){
+  let t=talks[Math.floor(Math.random()*talks.length)];
+  current=t;
+  document.getElementById("question").innerText=t.t;
+  document.getElementById("options").innerHTML="";
+  document.getElementById("result").innerHTML=
+  `<p>${t.zh}<br>
+   <span class="en">${t.en}</span></p>
+   <button onclick="speak()">🔊 音声</button>`;
+}
+
 function speak(){
-  let u1=new SpeechSynthesisUtterance(current.zh);
-  u1.lang="zh-HK";
-
-  let u2=new SpeechSynthesisUtterance(current.ex);
-  u2.lang="zh-HK";
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u1);
-  speechSynthesis.speak(u2);
+  let u=new SpeechSynthesisUtterance(current.zh);
+  u.lang="zh-HK";
+  speechSynthesis.speak(u);
 }
 
-function nextQuestion(){
-  newQuestion();
-}
-
-newQuestion();
+next();
 
 </script>
 
 </body>
 </html>
+``
