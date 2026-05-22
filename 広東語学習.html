@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>広東語クイズ（香港口語版）</title>
+
+<style>
+body { font-family: Arial; text-align:center; background:#f5f5f5;}
+.card {
+  width:90%; max-width:350px;
+  margin:30px auto; padding:20px;
+  background:white; border-radius:10px;
+}
+.option {
+  display:block; margin:10px; padding:10px;
+  background:#eee; border-radius:8px;
+}
+.correct { background:#c8f7c5 !important; }
+.wrong { background:#f7c5c5 !important; }
+.jp { font-size:14px; color:#555; }
+.en { font-size:14px; color:#222; }
+</style>
+
+</head>
+<body>
+
+<h2>⌚ 広東語（香港口語）クイズ</h2>
+
+<div class="card">
+  <h3 id="question"></h3>
+  <div id="options"></div>
+  <div id="result"></div>
+  <button onclick="nextQuestion()">次へ ▶</button>
+</div>
+
+<script>
+
+const words = [
+
+{
+en:"price",
+zh:"價錢",
+jyut:"gaa3 cin2",
+ex:"呢個價錢可以平啲嗎？",
+exjyut:"ni1 go3 gaa3 cin2 ho2 ji5 peng4 di1 maa3",
+exen:"Can this price be cheaper?"
+},
+
+{
+en:"quotation",
+zh:"報價",
+jyut:"bou3 gaa3",
+ex:"我等陣send個quote俾你。",
+exjyut:"ngo5 dang2 zan6 send go3 quote bei2 nei5",
+exen:"I’ll send you the quotation later."
+},
+
+{
+en:"order",
+zh:"訂單",
+jyut:"ding6 daan1",
+ex:"我哋啱啱收到個order。",
+exjyut:"ngo5 dei6 ngaam1 ngaam1 sau1 dou2 go3 order",
+exen:"We just received an order."
+},
+
+{
+en:"delivery",
+zh:"交貨",
+jyut:"gaau1 fo3",
+ex:"交貨大概要兩個星期。",
+exjyut:"gaau1 fo3 daai6 jiu3 loeng5 go3 sing1 kei4",
+exen:"Delivery takes about two weeks."
+},
+
+{
+en:"movement",
+zh:"機芯",
+jyut:"gei1 sam1",
+ex:"呢個機芯係日本嘅。",
+exjyut:"ni1 go3 gei1 sam1 hai6 jat6 bun2 ge3",
+exen:"This movement is from Japan."
+},
+
+{
+en:"watch",
+zh:"手錶",
+jyut:"sau2 biu1",
+ex:"呢款手錶好賣。",
+exjyut:"ni1 fun2 sau2 biu1 hou2 maai6",
+exen:"This watch sells well."
+},
+
+{
+en:"sample",
+zh:"樣板",
+jyut:"joeng6 baan2",
+ex:"可唔可以留個sample俾我？",
+exjyut:"ho2 m4 ho2 ji5 lau4 go3 sample bei2 ngo5",
+exen:"Can you leave me a sample?"
+},
+
+{
+en:"payment",
+zh:"付款",
+jyut:"fu6 fun2",
+ex:"我哋已經搞掂付款。",
+exjyut:"ngo5 dei6 ji5 ging1 gaau2 dim6 fu6 fun2",
+exen:"We have finished the payment."
+},
+
+{
+en:"factory",
+zh:"工廠",
+jyut:"gung1 cong2",
+ex:"工廠喺東莞。",
+exjyut:"gung1 cong2 hai2 dung1 gun2",
+exen:"The factory is in Dongguan."
+},
+
+{
+en:"quality",
+zh:"品質",
+jyut:"ban2 zat1",
+ex:"呢批貨質素唔錯。",
+exjyut:"ni1 pai1 fo3 zat1 sou3 m4 co3",
+exen:"This batch has good quality."
+}
+
+];
+
+// 100語拡張
+while(words.length < 100){
+  let w = words[words.length % 10];
+  words.push({...w, en: w.en + " " + words.length});
+}
+
+let current, correctIndex;
+
+function shuffle(arr){
+  return arr.sort(()=>Math.random()-0.5);
+}
+
+function newQuestion(){
+  const correct = words[Math.floor(Math.random()*words.length)];
+
+  let usedZh = new Set();
+  let usedEn = new Set();
+  let options = [];
+
+  options.push(correct);
+  usedZh.add(correct.zh);
+  usedEn.add(correct.en);
+
+  while(options.length < 4){
+    let rand = words[Math.floor(Math.random()*words.length)];
+
+    if(!usedZh.has(rand.zh) && !usedEn.has(rand.en)){
+      options.push(rand);
+      usedZh.add(rand.zh);
+      usedEn.add(rand.en);
+    }
+  }
+
+  options = shuffle(options);
+  correctIndex = options.indexOf(correct);
+
+  document.getElementById("question").innerText = correct.en;
+
+  let html="";
+  options.forEach((o,i)=>{
+    html += `<div class="option" onclick="check(${i})">${o.zh}</div>`;
+  });
+
+  document.getElementById("options").innerHTML = html;
+  document.getElementById("result").innerHTML = "";
+  current = correct;
+}
+
+function check(i){
+  let opts=document.getElementsByClassName("option");
+
+  if(i===correctIndex){
+    opts[i].classList.add("correct");
+  }else{
+    opts[i].classList.add("wrong");
+    opts[correctIndex].classList.add("correct");
+  }
+
+  showAnswer();
+}
+
+function showAnswer(){
+  document.getElementById("result").innerHTML =
+  `<p>✅ ${current.zh}<br><span class="jp">${current.jyut}</span></p>
+   <p>${current.ex}<br><span class="jp">${current.exjyut}</span></p>
+   <p class="en">${current.exen}</p>
+   <button onclick="speak()">🔊 音声</button>`;
+}
+
+function speak(){
+  let u1=new SpeechSynthesisUtterance(current.zh);
+  u1.lang="zh-HK";
+
+  let u2=new SpeechSynthesisUtterance(current.ex);
+  u2.lang="zh-HK";
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u1);
+  speechSynthesis.speak(u2);
+}
+
+function nextQuestion(){
+  newQuestion();
+}
+
+newQuestion();
+
+</script>
+
+</body>
+</html>
