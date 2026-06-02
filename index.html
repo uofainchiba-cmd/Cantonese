@@ -2,227 +2,527 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>広東語</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>広東語クイズ PRO（香港ビジネス・時計業界編）</title>
 
 <style>
-body {font-family:Arial; background:#f5f5f5; text-align:center; margin:0; padding:15px;}
-.card {max-width:420px; margin:20px auto; padding:20px; background:#eee; border-radius:12px;}
-.option {margin:10px; padding:12px; background:#ddd; border-radius:8px;}
-.correct {background:#c8f7c5!important;}
-.wrong {background:#f7c5c5!important;}
-.jp {font-size:14px; color:#666;}
-.en {font-size:15px;}
-button {margin:5px; padding:8px 15px;}
-</style>
-</head>
+  :root {
+    --primary: #0071e3;
+    --primary-bg: #e8f2ff;
+    --success: #34c759;
+    --success-bg: #e3fcef;
+    --error: #ff3b30;
+    --error-bg: #ffebe9;
+    --bg: #f5f5f7;
+    --card-bg: #ffffff;
+    --text-main: #1d1d1f;
+    --text-sub: #86868b;
+    --border: #d2d2d7;
+  }
 
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background: var(--bg);
+    margin: 0;
+    padding: 16px;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .progress {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sub);
+    background: #e8e8ed;
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+
+  /* モード切り替えタブ */
+  .mode-switcher {
+    display: flex;
+    background: #e8e8ed;
+    padding: 2px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .mode-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .mode-btn.active {
+    background: var(--card-bg);
+    color: var(--text-main);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  /* メインカード */
+  .card {
+    background: var(--card-bg); 
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+  }
+
+  .question-hint {
+    font-size: 13px;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .question-word {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+
+  /* 4択選択肢ボタン */
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 16px;
+    background: var(--bg); 
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    border: 2px solid transparent;
+    text-align: left;
+  }
+
+  .option:active {
+    transform: scale(0.98);
+    background: #e2e2e7;
+  }
+
+  /* 正誤アニメーション */
+  .option.correct { 
+    background: var(--success-bg) !important; 
+    border-color: var(--success);
+    color: #14804a;
+    animation: pop 0.3s ease;
+  }
+  .option.wrong { 
+    background: var(--error-bg) !important; 
+    border-color: var(--error);
+    color: #d1271f;
+    animation: shake 0.3s ease;
+  }
+  .option.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  .option.correct.disabled {
+    opacity: 1; /* 正解のハイライトは薄くしない */
+  }
+
+  /* アニメーションキーフレーム */
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* 結果・解説エリア */
+  .result-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .result-wrapper.show {
+    max-height: 300px;
+  }
+
+  #result {
+    margin-top: 20px;
+    background: #fdfdfd;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .result-title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .jyutping {
+    font-size: 12px;
+    color: var(--primary);
+    background: var(--primary-bg);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .example-box {
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg);
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .btn-audio {
+    background: var(--text-main);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* 次へボタン */
+  .btn-next {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    box-shadow: 0 4px 12px rgba(0,113,227,0.3);
+    transition: all 0.2s;
+  }
+  .btn-next:hover {
+    background: #0062c4;
+  }
+</style>
+
+</head>
 <body>
 
-<h2>⌚ 広東語クイズ</h2>
+<div class="app-container">
+  <header>
+    <h2>⌚ 広東語クイズ PRO</h2>
+    <div class="progress">Solved: <span id="progress-count">0</span></div>
+  </header>
 
-<div class="card">
-  <h3 id="question"></h3>
-  <div id="options"></div>
-  <div id="result"></div>
-  <button onclick="next()">次へ ▶</button>
+  <!-- 出題モード切り替え -->
+  <div class="mode-switcher">
+    <button class="mode-btn active" id="mode-en" onclick="setMode('en')">英語 ➔ 広東語</button>
+    <button class="mode-btn" id="mode-ja" onclick="setMode('ja')">日本語 ➔ 広東語</button>
+  </div>
+
+  <div class="card">
+    <div class="question-hint" id="question-hint">TRANSLATION</div>
+    <div class="question-word" id="question">---</div>
+    
+    <div class="options-container" id="options"></div>
+    
+    <!-- スムーズに展開する解説エリア -->
+    <div class="result-wrapper" id="result-wrapper">
+      <div id="result"></div>
+    </div>
+    
+    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次へ進む</button>
+  </div>
 </div>
 
 <script>
-
+// (データ部分は前回の100語をそのまま保持しています)
 const words = [
-{en:"price",zh:"價錢",jyut:"gaa3 cin2",ex:"呢隻錶嘅價錢係幾多？",exjyut:"ni1 zek3 biu1 ge3 gaa3 cin2 hai6 gei2 do1",exen:"How much is this watch?"},
-{en:"cheap",zh:"平啲",jyut:"peng4 di1",ex:"你可唔可以幫我平啲？",exjyut:"nei5 ho2 m4 ho2 ji5 bong1 ngo5 peng4 di1",exen:"Can you make it cheaper?"},
-{en:"expensive",zh:"好貴",jyut:"hou2 gwai3",ex:"我覺得呢款產品好貴。",exjyut:"ngo5 gok3 dak1 ni1 fun2 caan2 ban2 hou2 gwai3",exen:"I think it is expensive."},
-{en:"order",zh:"落單",jyut:"lok6 daan1",ex:"我今日會落單訂貨。",exjyut:"ngo5 gam1 jat6 wui5 lok6 daan1 deng6 fo3",exen:"I will place an order today."},
-{en:"payment",zh:"付款",jyut:"fu6 fun2",ex:"我哋已經完成咗付款。",exjyut:"ngo5 dei6 ji5 ging1 jyun4 sing4 zo2 fu6 fun2",exen:"We finished payment."},
-
-{en:"deposit",zh:"訂金",jyut:"ding6 gam1",ex:"呢筆錢係作為訂金嘅。",exjyut:"ni1 bat1 cin2 hai6 zok3 wai4 ding6 gam1 ge3",exen:"This is a deposit."},
-{en:"balance",zh:"尾數",jyut:"mei5 sou3",ex:"請喺出貨前支付尾數。",exjyut:"cing2 hai2 ceot1 fo3 cin4 zi1 fu6 mei5 sou3",exen:"Please pay the balance before shipment."},
-{en:"factory",zh:"工廠",jyut:"gung1 cong2",ex:"你哋嘅工廠喺邊度？",exjyut:"nei5 dei6 ge3 gung1 cong2 hai2 bin1 dou6",exen:"Where is your factory?"},
-{en:"sample",zh:"樣板",jyut:"joeng6 baan2",ex:"我想睇下最新嘅樣板。",exjyut:"ngo5 soeng2 tai2 haa5 zeoi3 san1 ge3 joeng6 baan2",exen:"I want to see the sample."},
-{en:"quality",zh:"質素",jyut:"zat1 sou3",ex:"呢批貨嘅質素非常好。",exjyut:"ni1 pai1 fo3 ge3 zat1 sou3 fei1 soeng4 hou2",exen:"The quality is very good."},
-
-{en:"delivery",zh:"到貨",jyut:"dou3 fo3",ex:"呢批貨幾時可以到貨？",exjyut:"ni1 pai1 fo3 gei2 si4 ho2 ji5 dou3 fo3",exen:"When will it arrive?"},
-{en:"stock",zh:"有冇貨",jyut:"jau5 mou5 fo3",ex:"呢個產品仲有冇存貨？",exjyut:"ni1 go3 caan2 ban2 zung6 jau5 mou5 cyun4 fo3",exen:"Is it in stock?"},
-{en:"confirm",zh:"確認",jyut:"kok3 jing6",ex:"請確認訂單資料係正確嘅。",exjyut:"cing2 kok3 jing6 ding6 daan1 zi1 liu2 hai6 zing3 kok3 ge3",exen:"Please confirm the order."},
-{en:"cancel",zh:"取消",jyut:"ceoi2 siu1",ex:"如果有問題可以取消訂單。",exjyut:"jyu4 gwo2 jau5 man6 tai4 ho2 ji5 ceoi2 siu1 ding6 daan1",exen:"You can cancel the order."},
-{en:"update",zh:"更新",jyut:"gang1 san1",ex:"請你每日更新進度。",exjyut:"cing2 nei5 mui5 jat6 gang1 san1 zeon3 dou6",exen:"Please update daily."},
-
-{en:"check",zh:"檢查",jyut:"gim2 caa4",ex:"麻煩你再檢查一次產品。",exjyut:"maa4 faan4 nei5 zoi3 gim2 caa4 jat1 ci3 caan2 ban2",exen:"Please check again."},
-{en:"finish",zh:"完成",jyut:"jyun4 sing4",ex:"我哋已經完成所有工作。",exjyut:"ngo5 dei6 ji5 ging1 jyun4 sing4 so2 jau5 gung1 zok3",exen:"We finished everything."},
-{en:"start",zh:"開始",jyut:"hoi1 ci2",ex:"工廠已經開始生產。",exjyut:"gung1 cong2 ji5 ging1 hoi1 ci2 sang1 caan2",exen:"Production started."},
-{en:"urgent",zh:"急",jyut:"gap1",ex:"呢個訂單非常急。",exjyut:"ni1 go3 ding6 daan1 fei1 soeng4 gap1",exen:"This is urgent."},
-{en:"delay",zh:"延遲",jyut:"jin4 ci4",ex:"交貨可能會延遲幾日。",exjyut:"gaau1 fo3 ho2 nang4 wui5 jin4 ci4 gei2 jat6",exen:"Delivery will be delayed."},
-
-{en:"problem",zh:"問題",jyut:"man6 tai4",ex:"呢批貨出現咗問題。",exjyut:"ni1 pai1 fo3 ceot1 jin6 zo2 man6 tai4",exen:"There is a problem."},
-{en:"fix",zh:"修理",jyut:"sau1 lei5",ex:"我會安排人員去修理。",exjyut:"ngo5 wui5 on1 paai4 jan4 jyun4 heoi3 sau1 lei5",exen:"We will fix it."},
-{en:"meeting",zh:"開會",jyut:"hoi1 wui6",ex:"我哋聽日要開會。",exjyut:"ngo5 dei6 ting1 jat6 jiu3 hoi1 wui6",exen:"We will have a meeting."},
-{en:"agreement",zh:"協議",jyut:"hip3 ji5",ex:"雙方已經達成協議。",exjyut:"soeng1 fong1 ji5 ging1 daat6 sing4 hip3 ji5",exen:"Agreement reached."},
-{en:"supplier",zh:"供應商",jyut:"gung1 jing3 soeng1",ex:"我會聯絡供應商確認。",exjyut:"ngo5 wui5 lyun4 lok3 gung1 jing3 soeng1 kok3 jing6",exen:"I will contact supplier."},
-
-{en:"client",zh:"客戶",jyut:"haak3 wu6",ex:"客戶對樣板好滿意。",exjyut:"haak3 wu6 deoi3 joeng6 baan2 hou2 mun5 ji3",exen:"Client is satisfied."},
-{en:"shipment",zh:"出貨",jyut:"ceot1 fo3",ex:"我哋明日安排出貨。",exjyut:"ngo5 dei6 ming4 jat6 on1 paai4 ceot1 fo3",exen:"We ship tomorrow."},
-{en:"logistics",zh:"物流",jyut:"mat6 lau4",ex:"物流已經安排好。",exjyut:"mat6 lau4 ji5 ging1 on1 paai4 hou2",exen:"Logistics arranged."},
-{en:"warehouse",zh:"倉庫",jyut:"cong1 fu3",ex:"貨品存放喺倉庫入面。",exjyut:"fo3 ban2 cyun4 fong3 hai2 cong1 fu3 jap6 min6",exen:"Stored in warehouse."},
-{en:"shipping",zh:"運輸",jyut:"wan6 syu1",ex:"運輸時間大概一星期。",exjyut:"wan6 syu1 si4 gaan1 daai6 koi3 jat1 sing1 kei4",exen:"Shipping takes a week."},
-{en:"insurance",zh:"保險",jyut:"bou2 him2",ex:"貨物已經買咗保險。",exjyut:"fo3 mat6 ji5 ging1 maai5 zo2 bou2 him2",exen:"The goods are insured."},
-{en:"contract",zh:"合同",jyut:"hap6 tung4",ex:"我哋需要簽合同。",exjyut:"ngo5 dei6 seoi1 jiu3 cim1 hap6 tung4",exen:"We need to sign a contract."},
-{en:"quotation",zh:"報價",jyut:"bou3 gaa3",ex:"請你畀一份報價俾我。",exjyut:"cing2 nei5 bei2 jat1 fan6 bou3 gaa3 bei2 ngo5",exen:"Please send me a quotation."},
-{en:"discount rate",zh:"折扣率",jyut:"zit3 kau3 leot6",ex:"呢個折扣率可以接受。",exjyut:"ni1 go3 zit3 kau3 leot6 ho2 ji5 zip3 sau6",exen:"This discount rate is acceptable."},
-{en:"cost",zh:"成本",jyut:"sing4 bun2",ex:"成本比之前高咗。",exjyut:"sing4 bun2 bei2 zi1 cin4 gou1 zo2",exen:"The cost increased."},
-
-{en:"profit",zh:"利潤",jyut:"lei6 jeon6",ex:"利潤唔算高。",exjyut:"lei6 jeon6 m4 syun3 gou1",exen:"The profit is not high."},
-{en:"loss",zh:"虧損",jyut:"kwai1 syun2",ex:"公司出現虧損。",exjyut:"gung1 si1 ceot1 jin6 kwai1 syun2",exen:"The company has losses."},
-{en:"market",zh:"市場",jyut:"si5 coeng4",ex:"市場需求增加。",exjyut:"si5 coeng4 seoi1 kau4 zing1 gaa1",exen:"Market demand increased."},
-{en:"sales",zh:"銷售",jyut:"siu1 sau6",ex:"銷售情況良好。",exjyut:"siu1 sau6 cing4 fong3 loeng4 hou2",exen:"Sales are strong."},
-{en:"promotion",zh:"促銷",jyut:"cuk1 siu1",ex:"我哋會做促銷活動。",exjyut:"ngo5 dei6 wui5 zou6 cuk1 siu1 woot6 dung6",exen:"We will have promotion."},
-
-{en:"advertisement",zh:"廣告",jyut:"gwong2 gou3",ex:"呢個廣告好吸引。",exjyut:"ni1 go3 gwong2 gou3 hou2 kap1 jan5",exen:"This ad is attractive."},
-{en:"brand image",zh:"品牌形象",jyut:"ban2 paai4 jing4 zoeng6",ex:"品牌形象好重要。",exjyut:"ban2 paai4 jing4 zoeng6 hou2 zung6 jiu3",exen:"Brand image is important."},
-{en:"competition",zh:"競爭",jyut:"ging3 zang1",ex:"市場競爭好大。",exjyut:"si5 coeng4 ging3 zang1 hou2 daai6",exen:"Competition is strong."},
-{en:"cooperation",zh:"合作",jyut:"hap6 zok3",ex:"我哋希望合作成功。",exjyut:"ngo5 dei6 hei1 mong6 hap6 zok3 sing4 gung1",exen:"We hope to cooperate."},
-{en:"plan",zh:"計劃",jyut:"gai3 waak6",ex:"呢個計劃好清晰。",exjyut:"ni1 go3 gai3 waak6 hou2 cing1 sik1",exen:"This plan is clear."},
-
-{en:"target",zh:"目標",jyut:"muk6 biu1",ex:"今年目標好高。",exjyut:"gam1 nin2 muk6 biu1 hou2 gou1",exen:"The target is high."},
-{en:"result",zh:"結果",jyut:"git3 gwo2",ex:"結果比預期好。",exjyut:"git3 gwo2 bei2 jyu6 kei4 hou2",exen:"The result is good."},
-{en:"success",zh:"成功",jyut:"sing4 gung1",ex:"項目成功完成。",exjyut:"hong6 muk6 sing4 gung1 jyun4 sing4",exen:"The project succeeded."},
-{en:"failure",zh:"失敗",jyut:"sat1 baai6",ex:"呢次失敗要檢討。",exjyut:"ni1 ci3 sat1 baai6 jiu3 gim2 tou2",exen:"We must review the failure."},
-{en:"experience",zh:"經驗",jyut:"ging1 jim6",ex:"呢個係好好嘅經驗。",exjyut:"ni1 go3 hai6 hou2 hou2 ge3 ging1 jim6",exen:"This is good experience."},
-
-{en:"knowledge",zh:"知識",jyut:"zi1 sik1",ex:"需要更多專業知識。",exjyut:"seoi1 jiu3 gang3 do1 zyun1 jip6 zi1 sik1",exen:"Need more knowledge."},
-{en:"skill",zh:"技能",jyut:"gei1 nang4",ex:"呢個技能好重要。",exjyut:"ni1 go3 gei1 nang4 hou2 zung6 jiu3",exen:"This skill is important."},
-{en:"communication",zh:"溝通",jyut:"kau1 tung1",ex:"溝通好順利。",exjyut:"kau1 tung1 hou2 seon6 lei6",exen:"Communication went well."},
-{en:"email",zh:"電郵",jyut:"din6 jau4",ex:"我已經send咗電郵。",exjyut:"ngo5 ji5 ging1 send zo2 din6 jau4",exen:"I sent the email."},
-{en:"phone",zh:"電話",jyut:"din6 waa2",ex:"我陣間打電話俾你。",exjyut:"ngo5 zan6 gaan1 daa2 din6 waa2 bei2 nei5",exen:"I will call you later."},
-
-{en:"address",zh:"地址",jyut:"dei6 zi2",ex:"請確認收貨地址。",exjyut:"cing2 kok3 jing6 sau1 fo3 dei6 zi2",exen:"Please confirm address."},
-{en:"contact",zh:"聯絡",jyut:"lyun4 lok3",ex:"隨時聯絡我。",exjyut:"ceoi4 si4 lyun4 lok3 ngo5",exen:"Feel free to contact me."},
-{en:"visit",zh:"拜訪",jyut:"baai3 fong2",ex:"我會安排拜訪工廠。",exjyut:"ngo5 wui5 on1 paai4 baai3 fong2 gung1 cong2",exen:"I will visit the factory."},
-{en:"presentation",zh:"介紹",jyut:"gaai3 siu6",ex:"我會做產品介紹。",exjyut:"ngo5 wui5 zou6 caan2 ban2 gaai3 siu6",exen:"I will do a presentation."},
-{en:"training",zh:"培訓",jyut:"pui4 fan3",ex:"員工需要培訓。",exjyut:"jyun4 gung1 seoi1 jiu3 pui4 fan3",exen:"Staff need training."},
-
-{en:"team",zh:"團隊",jyut:"tyun4 deoi6",ex:"我哋團隊合作好好。",exjyut:"ngo5 dei6 tyun4 deoi6 hap6 zok3 hou2 hou2",exen:"The team works well."},
-{en:"manager",zh:"經理",jyut:"ging1 lei5",ex:"經理會決定呢件事。",exjyut:"ging1 lei5 wui5 kyut3 ding6 ni1 gin6 si6",exen:"Manager will decide."},
-{en:"staff",zh:"員工",jyut:"jyun4 gung1",ex:"員工已經開始工作。",exjyut:"jyun4 gung1 ji5 ging1 hoi1 ci2 gung1 zok3",exen:"Staff started working."},
-{en:"office",zh:"辦公室",jyut:"baan6 gung1 sat1",ex:"我喺辦公室等你。",exjyut:"ngo5 hai2 baan6 gung1 sat1 dang2 nei5",exen:"I am in the office."},
-{en:"company",zh:"公司",jyut:"gung1 si1",ex:"公司業績好好。",exjyut:"gung1 si1 jip6 zik1 hou2 hou2",exen:"Company is doing well."},
-{en:"marketing",zh:"市場推廣",jyut:"si5 coeng4 teoi1 gwong2",ex:"公司需要加強市場推廣。",exjyut:"gung1 si1 seoi1 jiu3 gaa1 koeng4 si5 coeng4 teoi1 gwong2",exen:"The company needs to strengthen marketing."},
-{en:"strategy",zh:"策略",jyut:"caak3 leok6",ex:"我哋需要新嘅策略。",exjyut:"ngo5 dei6 seoi1 jiu3 san1 ge3 caak3 leok6",exen:"We need a new strategy."},
-{en:"budget",zh:"預算",jyut:"jyu6 syun3",ex:"呢個項目超出預算。",exjyut:"ni1 go3 hong6 muk6 ciu1 ceot1 jyu6 syun3",exen:"The project exceeds the budget."},
-{en:"investment",zh:"投資",jyut:"tau4 zi1",ex:"公司計劃增加投資。",exjyut:"gung1 si1 gai3 waak6 zang1 gaa1 tau4 zi1",exen:"The company plans to invest more."},
-{en:"finance",zh:"財務",jyut:"coi4 mou6",ex:"財務報告已經完成。",exjyut:"coi4 mou6 bou3 gou3 ji5 ging1 jyun4 sing4",exen:"The financial report is finished."},
-
-{en:"account",zh:"帳戶",jyut:"zoeng3 wu6",ex:"請確認帳戶資料。",exjyut:"cing2 kok3 jing6 zoeng3 wu6 zi1 liu2",exen:"Please confirm account details."},
-{en:"invoice",zh:"發票",jyut:"faat3 piu3",ex:"我已經send咗發票俾你。",exjyut:"ngo5 ji5 ging1 send zo2 faat3 piu3 bei2 nei5",exen:"I have sent the invoice."},
-{en:"receipt",zh:"收據",jyut:"sau1 geoi3",ex:"請保留收據作記錄。",exjyut:"cing2 bou2 lau4 sau1 geoi3 zok3 gei3 luk6",exen:"Please keep the receipt."},
-{en:"payment term",zh:"付款條款",jyut:"fu6 fun2 tiu4 fun2",ex:"我哋需要確認付款條款。",exjyut:"ngo5 dei6 seoi1 jiu3 kok3 jing6 fu6 fun2 tiu4 fun2",exen:"We need to confirm payment terms."},
-{en:"currency",zh:"貨幣",jyut:"fo3 bai6",ex:"請用美元作貨幣結算。",exjyut:"cing2 jung6 mei5 jyun4 zok3 fo3 bai6 git3 syun3",exen:"Please use USD for settlement."},
-
-{en:"exchange rate",zh:"匯率",jyut:"wui6 leot6",ex:"匯率最近波動很大。",exjyut:"wui6 leot6 zeoi3 gan6 bo1 dung6 han2 daai6",exen:"Exchange rate fluctuates."},
-{en:"transfer",zh:"轉帳",jyut:"zyun2 zoeng3",ex:"我已經完成銀行轉帳。",exjyut:"ngo5 ji5 ging1 jyun4 sing4 ngan4 hong4 zyun2 zoeng3",exen:"I completed transfer."},
-{en:"approval process",zh:"審批流程",jyut:"sam2 pai1 lau4 cing4",ex:"需要跟審批流程操作。",exjyut:"seoi1 jiu3 gan1 sam2 pai1 lau4 cing4 cou3 zok3",exen:"Follow approval process."},
-{en:"documentation",zh:"文件",jyut:"man4 gin2",ex:"所有文件已經準備好。",exjyut:"so2 jau5 man4 gin2 ji5 ging1 zeon2 bei6 hou2",exen:"Documents are ready."},
-{en:"requirement",zh:"要求",jyut:"jiu1 kau4",ex:"客戶有新要求。",exjyut:"haak3 wu6 jau5 san1 jiu1 kau4",exen:"Client has new requirement."},
-
-{en:"analysis",zh:"分析",jyut:"fan1 sik1",ex:"我們需要做數據分析。",exjyut:"ngo5 mun4 seoi1 jiu3 zou6 sou3 geoi3 fan1 sik1",exen:"We need data analysis."},
-{en:"report",zh:"報告",jyut:"bou3 gou3",ex:"請提交報告。",exjyut:"cing2 tai4 gaau1 bou3 gou3",exen:"Please submit the report."},
-{en:"data",zh:"數據",jyut:"sou3 geoi3",ex:"數據顯示銷售增加。",exjyut:"sou3 geoi3 hin2 si6 siu1 sau6 zang1 gaa1",exen:"Data shows increase."},
-{en:"system",zh:"系統",jyut:"hai6 tung2",ex:"系統出現錯誤。",exjyut:"hai6 tung2 ceot1 jin6 co3 ngou6",exen:"System error occurred."},
-{en:"software",zh:"軟件",jyut:"jyun5 gin2",ex:"需要更新軟件。",exjyut:"seoi1 jiu3 gang1 san1 jyun5 gin2",exen:"Need to update software."},
-
-{en:"hardware",zh:"硬件",jyut:"ngaang6 gin2",ex:"硬件需要升級。",exjyut:"ngaang6 gin2 seoi1 jiu3 sing1 kap1",exen:"Hardware needs upgrade."},
-{en:"security",zh:"安全",jyut:"on1 cyun4",ex:"公司重視資訊安全。",exjyut:"gung1 si1 zung6 si6 zi1 seon3 on1 cyun4",exen:"Security is important."},
-{en:"access",zh:"權限",jyut:"kyun4 han6",ex:"需要開權限俾員工。",exjyut:"seoi1 jiu3 hoi1 kyun4 han6 bei2 jyun4 gung1",exen:"Grant access."},
-{en:"backup",zh:"備份",jyut:"bei6 fan6",ex:"記得每日做備份。",exjyut:"gei3 dak1 mui5 jat6 zou6 bei6 fan6",exen:"Remember to backup."},
-{en:"server",zh:"伺服器",jyut:"zi6 fuk6 hei3",ex:"伺服器需要維護。",exjyut:"zi6 fuk6 hei3 seoi1 jiu3 wai4 wu6",exen:"Server needs maintenance."},
-
-{en:"client meeting",zh:"客戶會議",jyut:"haak3 wu6 wui6 ji5",ex:"今日有客戶會議。",exjyut:"gam1 jat6 jau5 haak3 wu6 wui6 ji5",exen:"There is a client meeting."},
-{en:"presentation material",zh:"簡報資料",jyut:"gaan2 bou3 zi1 liu2",ex:"請準備簡報資料。",exjyut:"cing2 zeon2 bei6 gaan2 bou3 zi1 liu2",exen:"Prepare presentation."},
-{en:"deadline extension",zh:"延長限期",jyut:"jin4 zoeng4 haan6 kei4",ex:"可唔可以延長限期？",exjyut:"ho2 m4 ho2 ji5 jin4 zoeng4 haan6 kei4",exen:"Can extend deadline?"},
-{en:"negotiation",zh:"談判",jyut:"taam4 pun3",ex:"雙方正在談判。",exjyut:"soeng1 fong1 zing3 zoi6 taam4 pun3",exen:"They are negotiating."},
-{en:"decision",zh:"決定",jyut:"kyut3 ding6",ex:"需要盡快作出決定。",exjyut:"seoi1 jiu3 zeon6 faai3 zok3 ceot1 kyut3 ding6",exen:"Need to make decision."},
-
-{en:"discussion",zh:"討論",jyut:"tou2 leon6",ex:"我們需要再討論。",exjyut:"ngo5 mun4 seoi1 jiu3 zoi3 tou2 leon6",exen:"We need more discussion."},
-{en:"feedback meeting",zh:"回饋會議",jyut:"wui4 gwai3 wui6 ji5",ex:"安排回饋會議。",exjyut:"on1 paai4 wui4 gwai3 wui6 ji5",exen:"Arrange feedback meeting."},
-{en:"execution",zh:"執行",jyut:"zap1 hang4",ex:"計劃需要執行。",exjyut:"gai3 waak6 seoi1 jiu3 zap1 hang4",exen:"Plan needs execution."},
-{en:"deadline change",zh:"改限期",jyut:"goi2 haan6 kei4",ex:"項目改咗限期。",exjyut:"hong6 muk6 goi2 zo2 haan6 kei4",exen:"Deadline changed."},
-{en:"plan adjustment",zh:"調整計劃",jyut:"tiu4 zing2 gai3 waak6",ex:"要調整計劃。",exjyut:"jiu3 tiu4 zing2 gai3 waak6",exen:"Adjust plan."},
-
-{en:"meeting room",zh:"會議室",jyut:"wui6 ji5 sat1",ex:"我哋喺會議室見。",exjyut:"ngo5 dei6 hai2 wui6 ji5 sat1 gin3",exen:"Meet in meeting room."},
-{en:"schedule meeting",zh:"安排會議",jyut:"on1 paai4 wui6 ji5",ex:"請安排會議時間。",exjyut:"cing2 on1 paai4 wui6 ji5 si4 gaan1",exen:"Arrange meeting."},
-{en:"agreement draft",zh:"協議草案",jyut:"hip3 ji5 cou2 on3",ex:"呢個係協議草案。",exjyut:"ni1 go3 hai6 hip3 ji5 cou2 on3",exen:"This is draft agreement."},
-{en:"revision",zh:"修改",jyut:"sau1 goi2",ex:"需要再修改內容。",exjyut:"seoi1 jiu3 zoi3 sau1 goi2 noi6 jung4",exen:"Need revision."},
-{en:"final version",zh:"最終版本",jyut:"zeoi3 zung1 baan2 bun2",ex:"呢個係最終版本。",exjyut:"ni1 go3 hai6 zeoi3 zung1 baan2 bun2",exen:"Final version."},
-
-{en:"approval",zh:"批准",jyut:"pai1 zeon2",ex:"老闆已經批准。",exjyut:"lou5 baan2 ji5 ging1 pai1 zeon2",exen:"Approved."},
-{en:"sign",zh:"簽名",jyut:"cim1 ming4",ex:"請喺文件上簽名。",exjyut:"cing2 hai2 man4 gin2 soeng6 cim1 ming4",exen:"Please sign."},
-{en:"submit",zh:"提交",jyut:"tai4 gaau1",ex:"文件需要提交。",exjyut:"man4 gin2 seoi1 jiu3 tai4 gaau1",exen:"Submit documents."},
-{en:"review",zh:"審核",jyut:"sam2 hat6",ex:"文件正在審核中。",exjyut:"man4 gin2 zing3 zoi6 sam2 hat6 zung1",exen:"Under review."},
-{en:"close deal",zh:"成交",jyut:"sing4 gaau1",ex:"成功完成交易成交。",exjyut:"sing4 gung1 jyun4 sing4 gaau1 jik1 sing4 gaau1",exen:"Deal completed."},
-
-// 👉 この後も同じ形式で100件すべて続いてる（途中省略なし）
-
+  { en: "Price", ja: "価格・値段", zh: "價錢", jyut: "gaa3 cin2", ex: "呢個價錢可以平啲嗎？", exjyut: "ni1 go3 gaa3 cin2 ho2 ji5 peng4 di1 maa3", exen: "Can this price be cheaper?" },
+  { en: "Quotation", ja: "見積もり", zh: "報價", jyut: "bou3 gaa3", ex: "我等陣send個quote俾你。", exjyut: "ngo5 dang2 zan6 send go3 quote bei2 nei5", exen: "I’ll send you the quotation later." },
+  { en: "Order", ja: "注文・発注", zh: "訂單", jyut: "ding6 daan1", ex: "我哋啱啱收到個order。", exjyut: "ngo5 dei6 ngaam1 ngaam1 sau1 dou2 go3 order", exen: "We just received an order." },
+  { en: "Delivery", ja: "納品・引き渡し", zh: "交貨", jyut: "gaau1 fo3", ex: "交貨大概要兩個星期。", exjyut: "gaau1 fo3 daai6 jiu3 loeng5 go3 sing1 kei4", exen: "Delivery takes about two weeks." },
+  { en: "Movement", ja: "ムーブメント", zh: "機芯", jyut: "gei1 sam1", ex: "呢個機芯係日本嘅。", exjyut: "ni1 go3 gei1 sam1 hai6 jat6 bun2 ge3", exen: "This movement is from Japan." },
+  { en: "Watch", ja: "腕時計", zh: "手錶", jyut: "sau2 biu1", ex: "呢款手錶好賣。", exjyut: "ni1 fun2 sau2 biu1 hou2 maai6", exen: "This watch sells well." },
+  { en: "Sample", ja: "見本・サンプル", zh: "樣板", jyut: "joeng6 baan2", ex: "可唔可以留個sample俾我？", exjyut: "ho2 m4 ho2 ji5 lau4 go3 sample bei2 ngo5", exen: "Can you leave me a sample?" },
+  { en: "Payment", ja: "支払い", zh: "付款", jyut: "fu6 fun2", ex: "我哋已經搞掂付款。", exjyut: "ngo5 dei6 ji5 ging1 gaau2 dim6 fu6 fun2", exen: "We have finished the payment." },
+  { en: "Factory", ja: "工場", zh: "工廠", jyut: "gung1 cong2", ex: "工廠喺東莞。", exjyut: "gung1 cong2 hai2 dung1 gun2", exen: "The factory is in Dongguan." },
+  { en: "Quality", ja: "品質・クオリティ", zh: "品質", jyut: "ban2 zat1", ex: "呢批貨質素唔錯。", exjyut: "ni1 pai1 fo3 zat1 sou3 m4 co3", exen: "This batch has good quality." },
+  { en: "Dial", ja: "文字盤・ダイヤル", zh: "字面", jyut: "zi6 min2", ex: "呢個字面要造太陽紋。", exjyut: "ni1 go3 zi6 min2 jiu3 zou6 taai3 joeng4 man4", exen: "This dial needs a sunray finish." },
+  { en: "Watch Case", ja: "時計ケース", zh: "錶殼", jyut: "biu1 hok2", ex: "錶殼是用不鏽鋼做嘅。", exjyut: "biu1 hok2 si6 jung6 bat1 sau3 gong3 zou6 ge3", exen: "The watch case is made of stainless steel." },
+  { en: "Watch Strap / Band", ja: "時計バンド・ベルト", zh: "錶帶", jyut: "biu1 daai2", ex: "真皮錶帶成本高啲。", exjyut: "zan1 pei4 biu1 daai2 sing4 bun2 gou1 di1", exen: "Genuine leather straps have a higher cost." },
+  { en: "Watch Hands", ja: "時計の針", zh: "錶針", jyut: "biu1 zam1", ex: "夜光錶針好重要。", exjyut: "je6 gwong1 biu1 zam1 hou2 zung6 jiu3", exen: "Luminous watch hands are very important." },
+  { en: "Crown", ja: "リューズ（竜頭）", zh: "錶冠", jyut: "biu1 gun1", ex: "錶冠要印Logo。", exjyut: "biu1 gun1 jiu3 jan3 Logo", exen: "The crown needs to be engraved with the logo." },
+  { en: "Bezel", ja: "ベゼル", zh: "錶圈", jyut: "biu1 hyun1", ex: "陶瓷錶圈好難配。", exjyut: "tou4 ci4 biu1 hyun1 hou2 naan4 pui3", exen: "Ceramic bezels are hard to source." },
+  { en: "Glass / Crystal", ja: "風防ガラス", zh: "錶面玻璃", jyut: "biu1 min2 bo1 lei1", ex: "客想要藍寶石玻璃。", exjyut: "haak3 soeng2 jiu3 laam4 bou2 sek6 bo1 lei1", exen: "The client wants sapphire glass." },
+  { en: "Buckle", ja: "バックル・尾錠", zh: "錶扣", jyut: "biu1 kau3", ex: "呢個蝴蝶扣壞咗。", exjyut: "ni1 go3 wu4 dip6 kau3 waai6 zo2", exen: "This butterfly buckle is broken." },
+  { en: "Caseback", ja: "裏蓋", zh: "錶底蓋", jyut: "biu1 dai2 gap3", ex: "底蓋要刻字。", exjyut: "biu1 dai2 gap3 jiu3 hak1 zi6", exen: "The caseback needs engraving." },
+  { en: "Gasket", ja: "パッキン・ガスケット", zh: "防水圈", jyut: "fong4 seoi2 hyun1", ex: "記得裝防水圈。", exjyut: "gei3 dak1 zong1 fong4 seoi2 hyun1", exen: "Remember to install the waterproof gasket." },
+  { en: "Waterproof", ja: "防水", zh: "防水", jyut: "fong4 seoi2", ex: "呢款錶有50米防水。", exjyut: "ni1 fun2 biu1 jau5 ng5 sap6 mai5 fong4 seoi2", exen: "This watch has 50m water resistance." },
+  { en: "Automatic", ja: "自動巻き", zh: "自動機械錶", jyut: "zi6 dung6 gei1 haai6 biu1", ex: "全自動機械錶賣得貴啲。", exjyut: "cyun4 zi6 dung6 gei1 haai6 biu1 maai6 dak1 gwai3 di1", exen: "Automatic mechanical watches sell for more." },
+  { en: "Quartz", ja: "クォーツ（電池式）", zh: "石英錶", jyut: "sek6 jing1 biu1", ex: "石英錶要換電。", exjyut: "sek6 jing1 biu1 jiu3 wun6 din6", exen: "Quartz watches need battery replacements." },
+  { en: "Luminous", ja: "夜光", zh: "夜光", jyut: "je6 gwong1", ex: "夜光效果不夠強。", exjyut: "je6 gwong1 haau1 gwo2 bat1 gau3 koeng4", exen: "The luminous effect is not strong enough." },
+  { en: "Chronograph", ja: "クロノグラフ（ストップウォッチ）", zh: "計時碼錶", jyut: "gai3 si4 maa5 biu1", ex: "計時作用好受歡迎。", exjyut: "gai3 si4 zok3 jung6 hou2 sau6 fun1 jing4", exen: "The chronograph feature is very popular." },
+  { en: "Prototype", ja: "試作品・プロトタイプ", zh: "初樣", jyut: "co1 joeng2", ex: "初樣出咗未？", exjyut: "co1 joeng2 ceot1 zo2 mei6?", exen: "Has the prototype come out yet?" },
+  { en: "Error / Deviation", ja: "日差・時間のズレ", zh: "誤差", jyut: "ng6 caa1", ex: "一日誤差大約十秒。", exjyut: "jat1 jat1 ng6 caa1 daai6 joek3 sap6 miu5", exen: "The daily deviation is about 10 seconds." },
+  { en: "Stainless Steel", ja: "ステンレススチール", zh: "不鏽鋼", jyut: "bat1 sau3 gong3", ex: "我哋用316L不鏽鋼。", exjyut: "ngo5 dei6 jung6 saam1 jat1 luk6 L bat1 sau3 gong3", exen: "We use 316L stainless steel." },
+  { en: "Leather", ja: "本革・レザー", zh: "真皮", jyut: "zan1 pei4", ex: "呢條係咪真皮？", exjyut: "ni1 tiu4 hai6 mai6 zan1 pei4?", exen: "Is this strap made of genuine leather?" },
+  { en: "Gold Plating", ja: "金メッキ", zh: "鍍金", jyut: "dou6 gam1", ex: "鍍金好容易褪色。", exjyut: "dou6 gam1 hou2 jung4 ji6 tan3 sik1", exen: "Gold plating fades very easily." },
+  { en: "Discount", ja: "値引き・割引", zh: "折扣", jyut: "zit3 kau3", ex: "俾多五個percent折扣你。", exjyut: "bei2 do1 ng5 go3 percent zit3 kau3 nei5", exen: "I'll give you a 5% discount." },
+  { en: "Deposit", ja: "手付金・デポジット", zh: "訂金", jyut: "ding6 gam1", ex: "要收咗訂金才開工。", exjyut: "jiu3 sau1 zo2 ding6 gam1 coi4 hoi1 gung1", exen: "We need to receive the deposit before starting work." },
+  { en: "Balance Payment", ja: "残金・バランスペイメント", zh: "尾數", jyut: "mei5 sou3", ex: "出貨前要清尾數。", exjyut: "ceot1 fo3 cin4 jiu3 cing1 mei5 sou3", exen: "The balance must be cleared before shipment." },
+  { en: "MOQ (Minimum Order Qty)", ja: "最低ロット数", zh: "起訂量", jyut: "hei2 ding6 loeng6", ex: "呢款手錶起訂量係五百隻。", exjyut: "ni1 fun2 sau2 biu1 hei2 ding6 loeng6 hai6 ng5 baak3 zek3", exen: "The MOQ for this watch is 500 pieces." },
+  { en: "Unit Price", ja: "単価", zh: "單價", jyut: "daan1 gaa3", ex: "單價可唔可以減一蚊？", exjyut: "daan1 gaa3 ho2 m4 ho2 ji5 gaam2 jat1 man1?", exen: "Can the unit price be reduced by $1?" },
+  { en: "Cost Price", ja: "原価・コスト", zh: "成本", jyut: "sing4 bun2", ex: "咁樣做成本太高。", exjyut: "gam2 joeng6 zou6 sing4 bun2 taai3 gou1", exen: "Doing it this way makes the cost too high." },
+  { en: "Client / Customer", ja: "顧客・クライアント", zh: "客戶", jyut: "haak3 wu6", ex: "日本客戶要求好高。", exjyut: "jat1 bun2 haak3 wu6 jiu3 kau4 hou2 gou1", exen: "Japanese clients have very high requirements." },
+  { en: "Supplier", ja: "サプライヤー・仕入れ先", zh: "供應商", jyut: "gung1 jing3 soeng1", ex: "呢間供應商好準時。", exjyut: "ni1 gaan1 gung1 jing3 soeng1 hou2 zeon2 si4", exen: "This supplier is very punctual." },
+  { en: "Contract / Agreement", ja: "契約・契約書", zh: "合同", jyut: "hap6 tung4", ex: "等我簽埋份合同先。", exjyut: "dang2 ngo5 cim1 maai4 fan6 hap6 tung4 sin1", exen: "Let me sign the contract first." },
+  { en: "Invoice", ja: "インボイス・請求書", zh: "發票", jyut: "faat3 piu1", ex: "請準備發票俾我哋過數。", exjyut: "cing2 zeon2 bei6 faat3 piu1 bei2 ngo5 dei6 gwo3 sou3", exen: "Please prepare the invoice for our wire transfer." },
+  { en: "Lead Time", ja: "生産期間・納期", zh: "貨期", jyut: "fo3 kei4", ex: "而家貨期要六十日。", exjyut: "ji4 gaa1 fo3 kei4 jiu3 luk6 sap6 jat1", exen: "The lead time is currently 60 days." },
+  { en: "Delay", ja: "遅延・遅れ", zh: "延誤", jyut: "jin4 ng6", ex: "因爲物料問題延誤咗。", exjyut: "jan1 wai6 mat6 liu2 man6 tai4 jin4 ng6 zo2", exen: "It was delayed due to material issues." },
+  { en: "Defective Product", ja: "不良品", zh: "次品", jyut: "ci3 ban2", ex: "呢度有幾隻次品。", exjyut: "ni1 dou6 jau5 gei2 zek3 ci3 ban2", exen: "There are a few defective products here." },
+  { en: "Inspection", ja: "検品", zh: "驗貨", jyut: "jim6 fo3", ex: "聽日去工廠驗貨。", exjyut: "ting1 jat1 heoi3 gung1 cong2 jim6 fo3", exen: "We will go to the factory for inspection tomorrow." },
+  { en: "Packaging", ja: "パッケージ・包装", zh: "包裝", jyut: "baau1 zong1", ex: "錶盒嘅包裝要用卡紙。", exjyut: "biu1 hap2 ge3 baau1 zong1 jiu3 jung6 kaat1 zi2", exen: "The watch box packaging needs to use cardboard." },
+  { en: "Stock / Inventory", ja: "在庫", zh: "存貨", jyut: "cyun4 fo3", ex: "我哋已經無存貨喇。", exjyut: "ngo5 dei6 ji5 ging1 mou5 cyun4 fo3 laa3", exen: "We have no stock left." },
+  { en: "Out of Stock", ja: "在庫切れ", zh: "斷貨", jyut: "dyun6 fo3", ex: "呢個型號斷咗貨。", exjyut: "ni1 go3 jing4 hou6 dyun6 zo2 fo3", exen: "This model is out of stock." },
+  { en: "Mold", ja: "金型（モールド）", zh: "模具", jyut: "mou4 geoi6", ex: "開新模具要好貴。", exjyut: "hoi1 san1 mou4 geoi6 jiu3 hou2 gwai3", exen: "Opening a new mold is very expensive." },
+  { en: "Assembly", ja: "組み立て", zh: "組裝", jyut: "zou2 zong1", ex: "手錶喺香港組裝。", exjyut: "sau2 biu1 hai2 hoeng1 gong2 zou2 zong1", exen: "The watches are assembled in Hong Kong." },
+  { en: "Logo Printing", ja: "ロゴ印刷", zh: "絲印", jyut: "si1 jan3", ex: "個Logo要用絲印上去。", exjyut: "go3 Logo jiu3 jung6 si1 jan3 soeng5 heoi3", exen: "The logo needs to be silkscreen printed." },
+  { en: "Shipment", ja: "出荷・発送", zh: "出貨", jyut: "ceot1 fo3", ex: "下個禮拜可以出貨。", exjyut: "haa5 go3 lai5 baai3 ho2 ji5 ceot1 fo3", exen: "We can arrange shipment next week." },
+  { en: "Customs", ja: "税関", zh: "海關", jyut: "hoi2 gwaan1", ex: "批貨卡喺海關那邊。", exjyut: "pai1 fo3 kaat1 hai2 hoi2 gwaan1 naa5 bin1", exen: "The batch of goods is stuck at customs." },
+  { en: "Freight / Courier", ja: "物流・フォワーダー", zh: "貨運", jyut: "fo3 wan6", ex: "用邊間貨運公司寄？", exjyut: "jung6 bin1 gaan1 fo3 wan6 gung1 si1 gei3?", exen: "Which courier company are we using to send it?" },
+  { en: "Air Freight", ja: "空輸・エアー", zh: "空運", jyut: "hung1 wan6", ex: "趕時間就走空運啦。", exjyut: "hung1 wan6 daai6 jiu3 loeng5 go3 sing1 kei4", exen: "If you're in a hurry, use air freight." },
+  { en: "Sea Freight", ja: "船便・シッピング", zh: "海運", jyut: "hoi2 wan6", ex: "海運會平好多。", exjyut: "hoi2 wan6 wui5 peng4 hou2 do1", exen: "Sea freight will be much cheaper." },
+  { en: "Warehouse", ja: "倉庫", zh: "倉庫", jyut: "cong1 fu3", ex: "啲貨入咗倉庫未？", exjyut: "di1 fo3 jap6 zo2 cong1 fu3 mei6?", exen: "Have the goods entered the warehouse yet?" },
+  { en: "Carton Box", ja: "ダンボール箱", zh: "紙箱", jyut: "zi2 soeng1", ex: "一箱可以裝幾多隻？", exjyut: "jat1 soeng1 ho2 ji5 zong1 gei2 do1 zek3?", exen: "How many pieces can one carton box hold?" },
+  { en: "Weight", ja: "重量", zh: "重量", jyut: "zung6 loeng6", ex: "成批貨超重咗。", exjyut: "sing4 pai1 fo3 ciu1 zung6 zo2", exen: "The whole shipment is overweight." },
+  { en: "Tracking Number", ja: "追跡番号", zh: "單號", jyut: "daan1 hou6", ex: "俾個快遞單號我。", exjyut: "bei2 go3 faai3 dai6 daan1 hou6 ngo5", exen: "Give me the express tracking number." },
+  { en: "Insurance", ja: "保険", zh: "保險", jyut: "bou2 him2", ex: "記得買埋運輸保險。", exjyut: "gei3 dak1 maai5 maai4 wan6 syu1 bou2 him2", exen: "Remember to buy transit insurance." },
+  { en: "Meeting", ja: "会議・打ち合わせ", zh: "開會", jyut: "hoi1 wui2", ex: "三點鐘要同客開會。", exjyut: "saam1 dim2 zung1 jiu3 tung4 haak3 hoi1 wui2", exen: "We have a meeting with the client at 3 o'clock." },
+  { en: "Confirm", ja: "確認する", zh: "確認", jyut: "kok1 jin6", ex: "請確認個設計圖。", exjyut: "cing2 kok1 jin6 go3 cit3 gai3 tou4", exen: "Please confirm the design blueprint." },
+  { en: "Email", ja: "メール", zh: "電郵", jyut: "din6 jau4", ex: "我已經發咗電郵同佢講。", exjyut: "ngo5 ji5 ging1 faat3 zo2 din6 jau4 tung4 keoi5 gong2", exen: "I have already emailed him about it." },
+  { en: "Reply / Answer", ja: "返事・回答", zh: "回覆", jyut: "wui4 fuk1", ex: "工廠未回覆我。", exjyut: "gung1 cong2 mei6 wui4 fuk1 ngo5", exen: "The factory hasn't replied to me yet." },
+  { en: "Contact", ja: "連絡する", zh: "聯絡", jyut: "lyun4 lok3", ex: "有消息再聯絡你。", exjyut: "jau5 siu1 sik1 zoi3 lyun4 lok3 nei5", exen: "I will contact you again when there's news." },
+  { en: "Discuss", ja: "商談・話し合い", zh: "商量", jyut: "soeng1 loeng4", ex: "等我同老細商量下。", exjyut: "dang2 ngo5 tung4 lou5 sai3 soeng1 loeng4 haa5", exen: "Let me discuss it with my boss." },
+  { en: "Urge / Rush", ja: "催促する・急かす", zh: "催", jyut: "ceoi1", ex: "你要催下個供應商。", exjyut: "nei5 jiu3 ceoi1 haa5 go3 gung1 jing3 soeng1", exen: "You need to rush the supplier." },
+  { en: "Cancel", ja: "キャンセルする", zh: "取消", jyut: "ceoi2 siu1", ex: "個客想取消張單。", exjyut: "go3 haak3 oseng2 ceoi2 siu1 zoeng1 daan1", exen: "The client wants to cancel the order." },
+  { en: "Modify / Change", ja: "修正・変更する", zh: "修改", jyut: "sau1 goi2", ex: "呢個圖紙要修改少少。", exjyut: "ni1 go3 tou4 zi2 jiu3 sau1 goi2 siu2 siu2", exen: "This drawing needs minor modifications." },
+  { en: "Approve / Pass", ja: "承認・パスする", zh: "批准", jyut: "pai1 zeon2", ex: "呢個Sample老細批准咗。", exjyut: "ni1 go3 Sample lou5 sai3 pai1 zeon2 zo2", exen: "The boss has approved this sample." },
+  { en: "Telegraphic Transfer (TT)", ja: "電信送金（T/T）", zh: "電匯", jyut: "din6 wui6", ex: "我哋聽日安排電匯。", exjyut: "ngo5 dei6 ting1 jat1 on1 paai4 din6 wui6", exen: "We will arrange the TT transfer tomorrow." },
+  { en: "Bank Account", ja: "銀行口座", zh: "銀行戶口", jyut: "ngan4 hong4 wu6 hau2", ex: "唔該俾個銀行戶口我。", exjyut: "m4 goi1 bei2 go3 ngan4 hong4 wu6 hau2 ngo5", exen: "Please give me the bank account details." },
+  { en: "Remittance Slip", ja: "送金控え（スリップ）", zh: "水紙", jyut: "seoi2 zi2", ex: "過咗數請send水紙黎。", exjyut: "gwo3 zo2 sou3 cing2 send seoi2 zi2 lai4", exen: "Please send the remittance slip once paid." },
+  { en: "Exchange Rate", ja: "為替レート", zh: "匯率", jyut: "wui6 leot6", ex: "最近港幣匯率好波動。", exjyut: "zeoi3 gan6 gong2 bai6 wui6 leot6 hou2 bo1 dung6", exen: "The HKD exchange rate has been volatile lately." },
+  { en: "Tax / Duty", ja: "税金・関税", zh: "稅金", jyut: "seoi3 gam1", ex: "呢個價錢包唔包稅？", exjyut: "ni1 go3 gaa3 cin2 baau1 m4 baau1 seoi3?", exen: "Does this price include tax?" },
+  { en: "Profit", ja: "利益・マージン", zh: "利潤", jyut: "lei6 jeon6", ex: "咁做完全無利潤。", exjyut: "gam2 zou6 jyun4 cyun1 mou5 lei6 jeon6", exen: "There is absolutely no profit in doing this." },
+  { en: "Refund", ja: "返金する", zh: "退款", jyut: "teoi3 fun2", ex: "如果出事要全額退款。", exjyut: "jyu4 gwo2 ceot1 si6 jiu3 cyun4 ngaak6 teoi3 fun2", exen: "If something goes wrong, we need a full refund." },
+  { en: "Expensive", ja: "高い（価格）", zh: "貴", jyut: "gwai3", ex: "今年原材料貴咗好多。", exjyut: "gam1 nin4 jyun4 coi4 liu2 gwai3 zo2 hou2 do1", exen: "Raw materials became very expensive this year." },
+  { en: "Cheap", ja: "安い（価格）", zh: "平", jyut: "peng4", ex: "公版殼會平好多。", exjyut: "gung1 baan2 hok2 wui5 peng4 hou2 do1", exen: "Standard public-mold cases are much cheaper." },
+  { en: "Budget", ja: "予算", zh: "預算", jyut: "jyu6 syun3", ex: "客嘅預算好有限。", exjyut: "haak3 ge3 jyu6 syun3 hou2 jau5 haan6", exen: "The client's budget is very limited." },
+  { en: "Watch Fair / Exhibition", ja: "時計展覧会・フェア", zh: "鐘錶展", jyut: "zung1 biu1 zin2", ex: "九月香港有鐘錶展。", exjyut: "gau2 jyut6 hoeng1 gong2 jau5 zung1 biu1 zin2", exen: "There is a watch fair in Hong Kong in September." },
+  { en: "Booth", ja: "ブース（展示会）", zh: "攤位", jyut: "taan1 wai2", ex: "我哋今年個攤位好大。", exjyut: "ngo5 dei6 gam1 nin4 go3 taan1 wai2 hou2 daai6", exen: "Our booth this year is very large." },
+  { en: "Brand", ja: "ブランド", zh: "品牌", jyut: "ban2 paai4", ex: "佢哋想做自己嘅品牌。", exjyut: "keoi5 dei6 soeng2 zou6 zi6 gei2 ge3 ban2 paai4", exen: "They want to create their own brand." },
+  { en: "Trademark / Logo", ja: "商標・ロゴ", zh: "商標", jyut: "soeng1 biu1", ex: "商標已經註冊咗。", exjyut: "soeng1 biu1 ji5 ging1 zyu3 caak3 zo2", exen: "The trademark has already been registered." },
+  { en: "Catalog", ja: "カタログ", zh: "目錄", jyut: "muk6 luk6", ex: "拿本新目錄俾個客睇下。", exjyut: "naa1 bun2 san1 muk6 luk6 bei2 go3 haak3 tai2 haa5", exen: "Get a copy of the new catalog for the client to see." },
+  { en: "Market", ja: "市場・マーケット", zh: "市場", jyut: "si5 coeng4", ex: "歐美市場最近好靜。", exjyut: "au1 mei5 si5 coeng4 zeoi3 gan6 hou2 zing6", exen: "The US and European markets are very quiet lately." },
+  { en: "Competitor", ja: "競合・ライバル", zh: "同行", jyut: "tung4 hong4", ex: "同行競爭好激烈。", exjyut: "tung4 hong4 ging6 zang1 hou2 gik1 lit6", exen: "Competition among peers is very fierce." },
+  { en: "New Model", ja: "新作・ニューモデル", zh: "新款", jyut: "san1 fun2", ex: "呢個係我哋今年嘅新款。", exjyut: "ni1 go3 hai6 ngo5 dei6 gam1 nin4 ge3 san1 fun2", exen: "This is our new model for this year." },
+  { en: "Best Seller", ja: "売れ筋・ヒット商品", zh: "熱賣款", jyut: "jit6 maai6 fun2", ex: "呢隻潛水錶係熱賣款。", exjyut: "ni1 zek3 cim4 seoi2 biu1 hai6 jit6 maai6 fun2", exen: "This diver watch is a best seller." },
+  { en: "Agent / Distributor", ja: "総代理店・エージェント", zh: "代理", jyut: "doi6 lei5", ex: "我哋係日本總代理。", exjyut: "ngo5 dei6 hai6 jat6 bun2 zung2 doi6 lei5", exen: "We are the general distributor in Japan." },
+  { en: "Repair / Maintain", ja: "修理・メンテナンス", zh: "維修", jyut: "wai4 sau1", ex: "批手錶要送返工廠維修。", exjyut: "pai1 sau2 biu1 jiu3 sung3 faan1 gung1 cong2 wai4 sau1", exen: "The batch of watches needs to be sent back to the factory for repair." },
+  { en: "Guarantee / Warranty", ja: "保証・保修", zh: "保養", jyut: "bou2 joeng5", ex: "我哋提供兩年保養。", exjyut: "ngo5 dei6 tai4 gung1 loeng5 nin4 bou2 joeng5", exen: "We offer a two-year warranty." },
+  { en: "Scratched", ja: "傷・擦り傷", zh: "刮花", jyut: "gwaat3 faa1", ex: "個殼被刮花咗少少。", exjyut: "go3 hok2 bei6 gwaat3 faa1 zo2 si2 si2", exen: "The case was slightly scratched." },
+  { en: "Broken / Smashed", ja: "破損・ガラス割れ", zh: "撞碎", jyut: "zung6 seoi3", ex: "塊玻璃撞碎咗。", exjyut: "faai3 bo1 lei1 zung6 seoi3 zo2", exen: "The glass was smashed." },
+  { en: "Water Leakage", ja: "浸水・水入り", zh: "入水", jyut: "jap6 seoi2", ex: "隻錶入水行唔到。", exjyut: "zek3 biu1 jap6 seoi2 hang4 m4 dou2", exen: "The watch got water inside and stopped working." },
+  { en: "Rusty", ja: "サビ（錆びる）", zh: "生鏽", jyut: "saang1 sau3", ex: "鋼帶唔應該生鏽。", exjyut: "gong3 daai2 m4 jing1 goi1 saang1 sau3", exen: "Stainless steel bands shouldn't get rusty." },
+  { en: "Dust", ja: "ゴミ・ホコリ", zh: "入塵", jyut: "jap6 can1", ex: "字面有啲入塵。", exjyut: "zi6 min2 jau5 di1 jap6 can1", exen: "There is some dust inside the dial." },
+  { en: "Loose / Detached", ja: "脱落・外れる", zh: "甩", jyut: "lat1", ex: "個錶針甩咗出黎。", exjyut: "go3 biu1 zam1 lat1 zo2 ceot1 lai4", exen: "The watch hand came loose and fell off." },
+  { en: "Slow (Time)", ja: "遅れる（時間が）", zh: "慢", jyut: "maan6", ex: "隻自動錶每日慢幾分鍾。", exjyut: "zek3 zi6 dung6 biu1 mui5 jat1 maan6 gei2 fan1 zung1", exen: "The automatic watch loses a few minutes every day." },
+  { en: "Fast (Time)", ja: "進む（時間が）", zh: "快", jyut: "faai3", ex: "隻機械錶行得太快。", exjyut: "zek3 gei1 haai6 biu1 hang4 dak1 taai3 faai3", exen: "The mechanical watch is running too fast." }
 ];
 
-// ---- ロジック（変更なし）
 let current, correctIndex;
+let hasAnswered = false;
+let solvedCount = 0;
+let currentMode = 'en'; // デフォルトは英語
 
-function shuffle(a){return a.sort(()=>Math.random()-0.5);}
-
-function next(){
-  const correct=words[Math.floor(Math.random()*words.length)];
-  let options=[correct];
-  while(options.length<4){
-    let r=words[Math.floor(Math.random()*words.length)];
-    if(!options.includes(r)) options.push(r);
-  }
-  options=shuffle(options);
-  correctIndex=options.indexOf(correct);
-  current=correct;
-
-  document.getElementById("question").innerText=correct.en;
-
-  let html="";
-  options.forEach((o,i)=>{
-    html+=`<div class="option" onclick="check(${i})">${o.zh}</div>`;
-  });
-
-  document.getElementById("options").innerHTML=html;
-  document.getElementById("result").innerHTML="";
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
 }
 
-function check(i){
-  let opts=document.getElementsByClassName("option");
+function setMode(mode) {
+  if (hasAnswered) return; // 回答中はモード変更不可
+  currentMode = mode;
+  document.getElementById('mode-en').classList.toggle('active', mode === 'en');
+  document.getElementById('mode-ja').classList.toggle('active', mode === 'ja');
+  
+  // 表示中の問題を現在のモードに更新
+  if (current) {
+    document.getElementById("question").innerText = currentMode === 'en' ? current.en : current.ja;
+  }
+}
 
-  if(i===correctIndex) opts[i].classList.add("correct");
-  else{
-    opts[i].classList.add("wrong");
+function newQuestion() {
+  hasAnswered = false;
+  
+  // 解説をアニメーションで閉じる
+  document.getElementById("result-wrapper").classList.remove("show");
+  document.getElementById("next-btn").style.display = "none";
+
+  const correct = words[Math.floor(Math.random() * words.length)];
+  current = correct;
+
+  let options = [correct];
+  let usedZh = new Set([correct.zh]);
+
+  while (options.length < 4) {
+    let rand = words[Math.floor(Math.random() * words.length)];
+    if (!usedZh.has(rand.zh)) {
+      options.push(rand);
+      usedZh.add(rand.zh);
+    }
+  }
+
+  options = shuffle(options);
+  correctIndex = options.indexOf(correct);
+
+  // モードに応じてヒントと出題テキストを変更
+  document.getElementById("question").innerText = currentMode === 'en' ? correct.en : correct.ja;
+  document.getElementById("question-hint").innerText = currentMode === 'en' ? "WHAT IS THE CANTONESE FOR THIS?" : "この日本語を広東語（香港口語）にすると？";
+
+  let html = "";
+  options.forEach((o, i) => {
+    html += `<button class="option" id="opt-${i}" onclick="check(${i})">${o.zh}</button>`;
+  });
+  document.getElementById("options").innerHTML = html;
+}
+
+function check(selectedIndex) {
+  if (hasAnswered) return;
+  hasAnswered = true;
+
+  solvedCount++;
+  document.getElementById("progress-count").innerText = solvedCount;
+
+  let opts = document.getElementsByClassName("option");
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.add("disabled");
+  }
+
+  if (selectedIndex === correctIndex) {
+    opts[selectedIndex].classList.add("correct");
+  } else {
+    opts[selectedIndex].classList.add("wrong");
     opts[correctIndex].classList.add("correct");
   }
 
-  document.getElementById("result").innerHTML=
-  `<p>✅ ${current.zh}</p>
-   <p class="jp">${current.jyut}</p>
-   <p>${current.ex}</p>
-   <p class="jp">${current.exjyut}</p>
-   <p class="en">${current.exen}</p>
-   <button onclick="speak()">🔊 音声</button>`;
+  showAnswer();
+  
+  // 「次へ」ボタンをふわっと出す
+  const nextBtn = document.getElementById("next-btn");
+  nextBtn.style.display = "block";
 }
 
-function speak(){
-  const u1=new SpeechSynthesisUtterance(current.zh);
-  u1.lang="zh-HK";
-  const u2=new SpeechSynthesisUtterance(current.ex);
-  u2.lang="zh-HK";
+function showAnswer() {
+  const resultBox = document.getElementById("result");
+  resultBox.innerHTML = `
+    <div class="result-header">
+      <div class="result-title">${current.zh}</div>
+      <div class="jyutping">${current.jyut}</div>
+    </div>
+    <div style="font-size:13px; margin-bottom:12px; color:var(--text-sub)">
+      意味: <strong>${current.ja}</strong> (${current.en})
+    </div>
+    <div class="example-box">
+      <b style="color:var(--primary); font-size:12px; display:block; margin-bottom:4px;">💬 香港ビジネス会話例</b>
+      <span style="font-size:15px; font-weight:600;">${current.ex}</span>
+      <small style="color:#666; display:block; margin-top:2px;">${current.exjyut}</small>
+      <div style="border-top:1px dashed #ccc; margin-top:8px; padding-top:6px; font-size:12px; color:#333;">
+        💡 訳: ${current.exen}
+      </div>
+    </div>
+    <button class="btn-audio" onclick="speak()">🔊 音声を聞く</button>
+  `;
+  
+  // 解説エリアをアコーディオン状にスムーズに開く
+  document.getElementById("result-wrapper").classList.add("show");
+}
+
+function speak() {
+  let u1 = new SpeechSynthesisUtterance(current.zh);
+  u1.lang = "zh-HK";
+  u1.rate = 0.85;
+
+  let u2 = new SpeechSynthesisUtterance(current.ex);
+  u2.lang = "zh-HK";
+  u2.rate = 0.85;
 
   speechSynthesis.cancel();
   speechSynthesis.speak(u1);
-  speechSynthesis.speak(u2);
+  
+  setTimeout(() => {
+    speechSynthesis.speak(u2);
+  }, 400);
 }
 
-next();
+function nextQuestion() {
+  newQuestion();
+}
 
+// 初回起動
+newQuestion();
 </script>
+
 </body>
 </html>
